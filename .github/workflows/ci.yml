@@ -1,0 +1,95 @@
+name: CI SuperApi
+
+on:
+  push:
+
+permissions:
+  id-token: write
+  contents: write
+  packages: write
+
+env:
+  CONTAINER_NAME: torrent-video
+  REPOSITORY_OWNER: rodeoclash
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if package-lock.json is up to date
+        run: npx --yes package-lock-utd@1.1.3
+
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+          
+      - name: Run Biome
+        run: biome ci --changed --no-errors-on-unmatched .
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        id: login-gcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: "./website"
+          file: "./website/Dockerfile.dev"
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+            ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        id: login-gcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull the website image from GPR
+        run: docker pull ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+
+      - name: Lint
+        env:
+          WEBSITE_IMAGE: ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        run: docker compose -f docker-compose.ci.yml run website mix format --check-formatted
+
+      - name: Test compiler warnings
+        env:
+          WEBSITE_IMAGE: ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        run: docker compose -f docker-compose.ci.yml run website mix compile --warnings-as-errors --force
+
+      - name: Test
+        env:
+          WEBSITE_IMAGE: ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        run: docker compose -f docker-compose.ci.yml run website mix test

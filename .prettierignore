@@ -1,0 +1,8 @@
+*.graphql.js
+node_modules
+
+website/_build
+website/cover
+website/deps
+website/priv/static
+website/.elixir_ls

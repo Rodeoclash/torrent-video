@@ -1,0 +1,46 @@
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: pg_isready -U postgres -d torrent_video_dev
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    image: postgres:17.2
+
+  pgadmin:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@example.com
+      PGADMIN_DEFAULT_PASSWORD: 12345678
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5000:80"
+
+  website:
+    build:
+      context: ./website
+      dockerfile: Dockerfile.dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    dns:
+      - "8.8.8.8"
+    ports:
+      - "4000:4000"
+    user: "1000"
+    volumes:
+      - ./website:/usr/src/app
+      - ./passwd:/etc/passwd
+      - home-server:/home/server
+      - opt-hex:/opt/hex
+      - opt-mix:/opt/mix
+
+volumes:
+  opt-hex:
+  opt-mix:
+  home-server:

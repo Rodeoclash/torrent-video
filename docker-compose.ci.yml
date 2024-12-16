@@ -1,0 +1,24 @@
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: pg_isready -U postgres -d phone_soup_dev
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    image: postgres:16.4
+
+  website:
+    depends_on:
+      - postgres
+    environment:
+      AWS_ACCESS_KEY_ID: "123"
+      AWS_SECRET_ACCESS_KEY: "abc"
+      MINIO_SERVER_HOST: "https://www.example.com"
+      STORAGE_BUCKET: "phone-soup-development"
+      TELNYX_API_KEY: "123"
+      TELNYX_CONNECTION_ID: "1234abcd"
+      TELNYX_PUBLIC_KEY: "abc"
+    image: ${WEBSITE_IMAGE}

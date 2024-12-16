@@ -1,0 +1,33 @@
+{
+  "version": "0.2",
+  "language": "en-GB",
+  "words": [
+    "AEDT",
+    "biomejs",
+    "buildx",
+    "conn",
+    "Footscray",
+    "machina",
+    "Mailgun",
+    "Minio",
+    "ngrok",
+    "noreply",
+    "outdir",
+    "pgcrypto",
+    "phonesoup",
+    "posttest",
+    "priv",
+    "ratelimit",
+    "resp",
+    "rodeoclash",
+    "statem",
+    "tailwindcss",
+    "tailwindlabs",
+    "telnyx",
+    "topbar",
+    "unhold",
+    "whereis"
+  ],
+  "flagWords": [],
+  "ignorePaths": []
+}

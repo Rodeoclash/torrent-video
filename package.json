@@ -1,0 +1,29 @@
+{
+  "name": "phonesoup",
+  "version": "1.0.0",
+  "description": "phonesoup",
+  "main": "index.js",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "lefthook": "^1.9.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "posttest": "npm run format",
+    "format": "npx @biomejs/biome check --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rodeoclash/vodon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rodeoclash/vodon/issues"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown",
+    "*.{js,css,md}": "prettier --write"
+  },
+  "homepage": "https://github.com/Rodeoclash/vodon#readme"
+}
